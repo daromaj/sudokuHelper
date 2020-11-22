@@ -1,0 +1,108 @@
+<html>
+<script>
+const SUDOKU=[1,2,3,4,5,6,7,8,9]
+
+function copy(a){
+    copyItems = [];
+    a.forEach(el=>copyItems.push(el));
+    return copyItems;
+}
+
+function total(a){
+    let result = 0;
+    a.forEach(el=>result+=el);
+    return result;
+}
+
+function printResults(results){
+    let resultEl = document.getElementById('result');
+    let out = '';
+    results.forEach(result=>{
+        out += result.join(' ') + '\n';
+    });
+    resultEl.innerText = out;
+    
+    let numbersEl = document.getElementById('numbers');
+    let nums = [];
+    results.forEach(result=>{
+        result.forEach(el=>{
+            if(!nums.includes(el)){
+                nums.push(el);
+            }
+        })
+    });
+    nums.sort(function(a, b) {
+        return a - b;
+    });
+    numbersEl.innerText = nums.join(' ');    
+}
+
+function keepLooking(currentValue, target, candidates, startIndex, tmpResult, size, results){    
+    let currentSize = tmpResult.length;
+    let remainingCount = size-currentSize;
+    candidates.forEach(function(el,i){
+        if(i >= startIndex){
+            if(remainingCount == 1){
+                if((currentValue+el) == target){
+                    let localCopy = copy(tmpResult);
+                    localCopy.push(el);
+                    results.push(localCopy);
+                }
+            }else if(remainingCount > 1){
+                if((currentValue+el)<target){
+                    let localCopy = copy(tmpResult);
+                    localCopy.push(el);
+                    keepLooking(total(localCopy), target, candidates, i+1, localCopy, size, results);                    
+                }
+            }
+        }
+    });
+}
+
+function findCandidates(){
+    let target = document.getElementById('target').value;
+    let exclude = document.getElementById('exclude').value.trim().split('');
+    let size = document.getElementById('size').value;
+
+    let candidates = SUDOKU.filter(el => !exclude.includes(el.toString()))
+
+    let results = [];
+
+    candidates.forEach(function(num, i){
+        let r = [num];
+        if(total(r) < target){
+            keepLooking(total(r), target, candidates, i+1, r, size, results);
+        }
+    });
+    printResults(results);
+}
+
+</script>
+<body>
+    <ul>
+        <li>
+            <label for="target">Target:</label>
+            <input id="target" type="number" name="target" onchange="findCandidates();"/>
+        </li>
+        <li>
+            <label for="size">How many:</label>
+            <input id="size" type="number" name="size" onchange="findCandidates();"/>
+        </li>
+        <li>
+            <label for="exclude">Exclude:</label>
+            <input id="exclude" type="text" name="exclude" onkeyup="findCandidates();"/>
+        </li>        
+    </ul>
+    Results:<br/>
+    <pre id="result">
+
+    </pre>
+    Numbers:<br/>
+    <pre id="numbers">
+
+    </pre>
+
+
+</body>
+</html>
+
